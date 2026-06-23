@@ -19,7 +19,7 @@
 
 Name:          postgis
 Version:       3.5.3
-Release:       3%{?dist}
+Release:       5%{?dist}
 Summary:       Geographic Information Systems Extensions to PostgreSQL
 License:       GPL-2.0-or-later
 
@@ -317,8 +317,15 @@ strip %{buildroot}/%{_libdir}/gcj/%{name}/*.jar.so
 %endif
 
 %if %utils
+pushd utils
 install -d %{buildroot}%{_datadir}/%{name}
-install -m 755 utils/*.pl %{buildroot}%{_datadir}/%{name}
+install -m 755 create_*.pl repo_revision.pl \
+    %{name}_restore.pl read_scripts_version.pl \
+%if 0%{?fedora}
+    profile_intersects.pl test_*.pl \
+%endif
+    %{buildroot}%{_datadir}/%{name}
+popd
 %endif
 
 find %buildroot \( -name '*.la' -or -name '*.a' \) -delete
@@ -444,16 +451,19 @@ fi
 %doc utils/README
 %dir %{_datadir}/%{name}/
 %doc %{_datadir}/doc/pgsql/extension/README.address_standardizer
-%{_datadir}/%{name}/test_estimation.pl
-%{_datadir}/%{name}/profile_intersects.pl
-%{_datadir}/%{name}/test_joinestimation.pl
 %{_datadir}/%{name}/create_extension_unpackage.pl
-%{_datadir}/%{name}/%{name}_restore.pl
-%{_datadir}/%{name}/read_scripts_version.pl
-%{_datadir}/%{name}/test_geography_estimation.pl
-%{_datadir}/%{name}/test_geography_joinestimation.pl
 %{_datadir}/%{name}/create_or_replace_to_create.pl
 %{_datadir}/%{name}/create_upgrade.pl
+%{_datadir}/%{name}/%{name}_restore.pl
+%{_datadir}/%{name}/read_scripts_version.pl
+%if 0%{?fedora}
+# requires perl(Pg)
+%{_datadir}/%{name}/profile_intersects.pl
+%{_datadir}/%{name}/test_estimation.pl
+%{_datadir}/%{name}/test_geography_estimation.pl
+%{_datadir}/%{name}/test_geography_joinestimation.pl
+%{_datadir}/%{name}/test_joinestimation.pl
+%endif
 %endif
 
 
@@ -462,6 +472,13 @@ fi
 
 
 %changelog
+* Tue Nov 18 2025 Nikola Davidova <ndavidov@redhat.com> - 3.5.3-5
+- Rebuild for adding tmt metadata
+
+* Wed Nov 12 2025 Nikola Davidova <ndavidov@redhat.com> - 3.5.3-4
+- Avoid perl(Pg) dependency on RHEL,
+  from the Fedora spec change from yselkowi@redhat.com
+
 * Tue Jul 29 2025 Sandro Mani <manisandro@gmail.com> - 3.5.3-3
 - Rebuild (gdal)
 
